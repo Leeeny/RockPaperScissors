@@ -6,7 +6,7 @@ import org.json.simple.JSONObject;
 
 public class Runnable {
     public static void main(String[] args) {
-        Player player1 = new Player("Вася", Move.PAPER);
+       /* Player player1 = new Player("Вася", Move.PAPER);
         Player player2 = new Player("Петя", Move.ROCK);
 
         Game game = new Game(player1, player2);
@@ -29,6 +29,6 @@ public class Runnable {
 
         Game game1 = GameSerialization.FileToGame("game.json");
 
-        //Move move = Connection.getMoveFromConsole();
+        //Move move = Connection.getMoveFromConsole();*/
     }
 }

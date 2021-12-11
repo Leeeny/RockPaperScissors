@@ -17,25 +17,30 @@ public class Client {
         System.out.println("Client is running");
 
         //ненавижу потоки явы
-        DataOutputStream dataOutputStream = new DataOutputStream(client.getOutputStream());
-        DataInputStream dataInputStream = new DataInputStream(client.getInputStream());
         PrintWriter writer = new PrintWriter(client.getOutputStream());
-        BufferedReader reader = new BufferedReader(new InputStreamReader(dataInputStream));
         Scanner scanner = new Scanner(client.getInputStream());
-
-        String name = Connection.getSMTFromConsole("Enter player name");
-        Move move = Connection.getMoveFromConsole();
-        Player player = new Player(name, move);
+        Game game;
+        Player player;
+        Move move;
+        Boolean isLoad = Boolean.valueOf(Connection.recv(scanner));
+        if (isLoad) {
+            String getG = Connection.recv(scanner);
+            game = GameSerialization.GameFromString(getG);
+            player = game.getPlayer2();
+            System.out.println();
+            System.out.println(game.getResult());
+            System.out.println("\nYou are " + player.getName());
+            move = Connection.getMoveFromConsole();
+            player.setMove(move);
+        } else {
+            String name = Connection.getSMTFromConsole("Enter player name");
+            move = Connection.getMoveFromConsole();
+            player = new Player(name, move);
+        }
         JSONObject playerToServer = GameSerialization.PlayerTOJSON(player);
-
-        //Connection.send(playerToServer.toString(), writer);
-
-        writer.println(playerToServer.toString());
-        writer.flush();
-
-        //scanner.nextLine();
-        String gameStr = scanner.nextLine(); //reader.readLine();
-        Game game = GameSerialization.GameFromString(gameStr);
+        Connection.send(playerToServer.toString(), writer);
+        String gameStr = Connection.recv(scanner);
+        game = GameSerialization.GameFromString(gameStr);
         System.out.println();
         System.out.println(game.getResult());
 
@@ -43,7 +48,6 @@ public class Client {
         System.out.println("Client closed");
         client.close();
         writer.close();
-        reader.close();
-        scanner.close();
+
     }
 }

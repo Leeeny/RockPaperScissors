@@ -12,6 +12,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
+
 public class Server {
     public static void main(String[] args) throws IOException, ParseException {
         ServerSocket server = new ServerSocket(8888);
@@ -19,35 +20,50 @@ public class Server {
         Socket client = server.accept(); //присоединяем клиента
         System.out.println("Client successfully connected");
 
-        DataInputStream dataInputStream = new DataInputStream(client.getInputStream());
-        DataOutputStream dataOutputStream = new DataOutputStream(client.getOutputStream());
-
         PrintWriter writer = new PrintWriter(client.getOutputStream());
-        //BufferedReader reader = new BufferedReader(new InputStreamReader(dataInputStream));
-        //InputStreamReader reader = new InputStreamReader(client.getInputStream());
         Scanner scanner = new Scanner(client.getInputStream());
-
-        String name1 = Connection.getSMTFromConsole("Enter player name");
-        Move move1 = Connection.getMoveFromConsole();
-        Player player1 = new Player(name1, move1);
-        String p2str = Connection.recv(scanner); //scanner.nextLine(); //reader.readLine();
-
-        Player player2 = GameSerialization.PlayerFromString(p2str);
-
-        Game game = new Game(player1, player2);
+        File file = new File("game.json");
+        Game game;
+        Move move1;
+        Boolean isLoad = false;
+        if (file.exists()) {
+            isLoad = Connection.getBoolean("Do you want to load the game?");
+        }
+        Connection.send(String.valueOf(isLoad), writer);
+        if (isLoad) {
+            game = GameSerialization.FileToGame("game.json");
+            String strG = GameSerialization.GameTOJSON(game).toString();
+            Connection.send(strG, writer);
+            System.out.println();
+            System.out.println(game.getResult());
+            System.out.println("\nYou are " + game.getPlayer1().getName());
+            move1 = Connection.getMoveFromConsole();
+            game.getPlayer1().setMove(move1);
+            String p2str = Connection.recv(scanner);
+            game.setPlayer2(GameSerialization.PlayerFromString(p2str));
+            game.playGame();
+        } else {
+            String name1 = Connection.getSMTFromConsole("Enter player name");
+            move1 = Connection.getMoveFromConsole();
+            Player player1 = new Player(name1, move1);
+            String p2str = Connection.recv(scanner);
+            Player player2 = GameSerialization.PlayerFromString(p2str);
+            game = new Game(player1, player2);
+        }
         System.out.println();
         System.out.println(game.getResult());
         JSONObject gameTOClient = GameSerialization.GameTOJSON(game);
-
-        writer.println(gameTOClient.toString());
-        writer.flush();
-
+        Connection.send(gameTOClient.toString(), writer);
+        System.out.println();
+        boolean toSave = Connection.getBoolean("Do you want to save the game?");
+        if (toSave) {
+            GameSerialization.GameToFile(game, "game.json");
+        }
         System.out.println();
         System.out.println("Server closed");
         server.close();
         client.close();
         writer.close();
-        //reader.close();
         scanner.close();
     }
 }

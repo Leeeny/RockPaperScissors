@@ -30,8 +30,20 @@ public class Connection {
         return Move.valueOf(move);
     }
 
-    public static void send(String str, PrintWriter... writers) {
-        Arrays.stream(writers).forEach(writer -> writer.println(str));
+
+    public static boolean getBoolean(String str){
+        Scanner in = new Scanner(System.in);
+        System.out.println(str + " (Y/N)");
+        String yn = null;
+        do {
+            yn = in.next();
+        } while (!Objects.equals(yn, "Y") && !Objects.equals(yn, "N"));
+        return yn.equals("Y");
+    }
+
+    public static void send(String str, PrintWriter writer) {
+        writer.println(str);
+        writer.flush();
     }
 
     public static String recv(Scanner scanner) throws IOException {
