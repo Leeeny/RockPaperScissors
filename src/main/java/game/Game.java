@@ -1,3 +1,5 @@
+package game;
+
 import java.util.ArrayList;
 
 public class Game {
@@ -5,8 +7,8 @@ public class Game {
     private long player2Score;
     private Player player1;
     private Player player2;
-    //private ArrayList<Move> player1Moves;
-    //private ArrayList<Move> player2Moves;
+    //private ArrayList<game.Move> player1Moves;
+    //private ArrayList<game.Move> player2Moves;
 
     /**
      * Как играть в эту игру:

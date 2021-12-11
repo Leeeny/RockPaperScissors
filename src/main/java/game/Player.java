@@ -1,3 +1,7 @@
+package game;
+
+import game.Move;
+
 public class Player {
     private String name;
     private Move move;
@@ -9,7 +13,7 @@ public class Player {
 
     public Player(Move move){
         this.move = move;
-        name = "Unknown Player";
+        name = "Unknown game.Player";
     }
 
     public void setName(String name) {

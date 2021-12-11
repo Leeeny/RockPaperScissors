@@ -1,3 +1,7 @@
+import game.Game;
+import game.GameSerialization;
+import game.Move;
+import game.Player;
 import org.json.simple.JSONObject;
 
 public class Runnable {
@@ -18,12 +22,13 @@ public class Runnable {
 
         result = game.getResult();
         System.out.println(result);
-        //JSONObject serr = GameSerialization.GameTOJSON(game);
+        //JSONObject serr = game.GameSerialization.GameTOJSON(game);
         GameSerialization.GameToFile(game, "game.json");
         JSONObject serr = GameSerialization.FileToJSON("game.json");
         System.out.println("\n" + serr);
 
         Game game1 = GameSerialization.FileToGame("game.json");
 
+        //Move move = Connection.getMoveFromConsole();
     }
 }
