@@ -1,5 +1,8 @@
 package game;
 
+import exeptions.KeyInSavedGameFileNotFoundException;
+import exeptions.KeyInStringOfGameNotFound;
+import exeptions.KeyInStringOfPlayerNotFound;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -7,6 +10,7 @@ import org.json.simple.parser.ParseException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Set;
 
 public class GameSerialization {
     public static JSONObject GameTOJSON(Game game) {
@@ -34,15 +38,41 @@ public class GameSerialization {
         return new Player(name, move);
     }
 
-    public static Player PlayerFromString(String str) throws ParseException {
-        JSONParser parser = new JSONParser();
-        JSONObject json = (JSONObject) parser.parse(str);
-        return PlayerFromJSON(json);
-    }
-
-    public static Game GameFromString(String str) throws ParseException {
+    public static Player PlayerFromString(String str) throws ParseException, KeyInStringOfPlayerNotFound {
         JSONParser parser = new JSONParser();
         JSONObject jsonObject = (JSONObject) parser.parse(str);
+        Set keyset = jsonObject.keySet();
+        if (!keyset.contains("player_name")) {
+            throw new KeyInStringOfPlayerNotFound();
+        }
+        if (!keyset.contains("player_last_move")) {
+            throw new KeyInStringOfPlayerNotFound();
+        }
+        return PlayerFromJSON(jsonObject);
+    }
+
+    public static Game GameFromString(String str) throws ParseException, KeyInStringOfGameNotFound {
+        JSONParser parser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) parser.parse(str);
+        Set keyset = jsonObject.keySet();
+        if (!keyset.contains("player1_name")) {
+            throw new KeyInStringOfGameNotFound();
+        }
+        if (!keyset.contains("player2_name")) {
+            throw new KeyInStringOfGameNotFound();
+        }
+        if (!keyset.contains("player1_last_move")) {
+            throw new KeyInStringOfGameNotFound();
+        }
+        if (!keyset.contains("player2_last_move")) {
+            throw new KeyInStringOfGameNotFound();
+        }
+        if (!keyset.contains("player1_score")) {
+            throw new KeyInStringOfGameNotFound();
+        }
+        if (!keyset.contains("player2_score")) {
+            throw new KeyInStringOfGameNotFound();
+        }
         String name = (String) jsonObject.get("player1_name");
         Move move = Move.valueOf((String) jsonObject.get("player1_last_move"));
         Player player1 = new Player(name, move);
@@ -67,19 +97,36 @@ public class GameSerialization {
         }
     }
 
-    public static JSONObject FileToJSON(String filename) {
+    public static JSONObject JSONFromFile(String filename) throws IOException, ParseException, KeyInSavedGameFileNotFoundException {
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = new JSONObject();
-        try (FileReader fileReader = new FileReader(filename)) {
-            jsonObject = (JSONObject) jsonParser.parse(fileReader);
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+        FileReader fileReader = new FileReader(filename);
+        jsonObject = (JSONObject) jsonParser.parse(fileReader);
+        Set keyset = jsonObject.keySet();
+        if (!keyset.contains("player1_name")) {
+            throw new KeyInSavedGameFileNotFoundException();
         }
+        if (!keyset.contains("player2_name")) {
+            throw new KeyInSavedGameFileNotFoundException();
+        }
+        if (!keyset.contains("player1_last_move")) {
+            throw new KeyInSavedGameFileNotFoundException();
+        }
+        if (!keyset.contains("player2_last_move")) {
+            throw new KeyInSavedGameFileNotFoundException();
+        }
+        if (!keyset.contains("player1_score")) {
+            throw new KeyInSavedGameFileNotFoundException();
+        }
+        if (!keyset.contains("player2_score")) {
+            throw new KeyInSavedGameFileNotFoundException();
+        }
+        fileReader.close();
         return jsonObject;
     }
 
-    public static Game FileToGame(String filename) {
-        JSONObject jsonObject = FileToJSON(filename);
+    public static Game FileToGame(String filename) throws KeyInSavedGameFileNotFoundException, IOException, ParseException {
+        JSONObject jsonObject = JSONFromFile(filename);
         String name = (String) jsonObject.get("player1_name");
         Move move = Move.valueOf((String) jsonObject.get("player1_last_move"));
         Player player1 = new Player(name, move);

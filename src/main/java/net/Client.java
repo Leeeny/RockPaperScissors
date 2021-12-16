@@ -1,5 +1,6 @@
 package net;
 
+import exeptions.KeyInStringOfGameNotFound;
 import game.Game;
 import game.GameSerialization;
 import game.Move;
@@ -23,31 +24,34 @@ public class Client {
         Player player;
         Move move;
         Boolean isLoad = Boolean.valueOf(Connection.recv(scanner));
-        if (isLoad) {
-            String getG = Connection.recv(scanner);
-            game = GameSerialization.GameFromString(getG);
-            player = game.getPlayer2();
+        try {
+            if (isLoad) {
+                String getG = Connection.recv(scanner);
+                game = GameSerialization.GameFromString(getG);
+                player = game.getPlayer2();
+                System.out.println();
+                System.out.println(game.getResult());
+                System.out.println("\nYou are " + player.getName());
+                move = Connection.getMoveFromConsole();
+                player.setMove(move);
+            } else {
+                String name = Connection.getSMTFromConsole("Enter player name");
+                move = Connection.getMoveFromConsole();
+                player = new Player(name, move);
+            }
+            JSONObject playerToServer = GameSerialization.PlayerTOJSON(player);
+            Connection.send(playerToServer.toString(), writer);
+            String gameStr = Connection.recv(scanner);
+            game = GameSerialization.GameFromString(gameStr);
             System.out.println();
             System.out.println(game.getResult());
-            System.out.println("\nYou are " + player.getName());
-            move = Connection.getMoveFromConsole();
-            player.setMove(move);
-        } else {
-            String name = Connection.getSMTFromConsole("Enter player name");
-            move = Connection.getMoveFromConsole();
-            player = new Player(name, move);
+            System.out.println();
+            System.out.println("Client closed");
+            client.close();
+            writer.close();
+        } catch (KeyInStringOfGameNotFound e) {
+            System.out.println("Whoops! Something gone wrong with the transfer of the game json to the client!");
+            e.printStackTrace();
         }
-        JSONObject playerToServer = GameSerialization.PlayerTOJSON(player);
-        Connection.send(playerToServer.toString(), writer);
-        String gameStr = Connection.recv(scanner);
-        game = GameSerialization.GameFromString(gameStr);
-        System.out.println();
-        System.out.println(game.getResult());
-
-        System.out.println();
-        System.out.println("Client closed");
-        client.close();
-        writer.close();
-
     }
 }
